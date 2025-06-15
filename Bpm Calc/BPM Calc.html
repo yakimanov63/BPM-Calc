@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="AVA B.png" />
+  <title>BPM Calculator</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f0f8ff, #dbefff);
+      --box-gradient: linear-gradient(135deg, #ffffffdd, #e0f0ffcc);
+      --shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: url('v904-nunny-012.jpg') center/cover no-repeat fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-size: cover;
+      background-position: center;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
+    }
+
+    input {
+      padding: 0.6rem 1rem;
+      font-size: 2.0rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      margin-bottom: 2rem;
+      width: 120px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--box-gradient);
+      box-shadow: var(--shadow);
+      border-radius: 1.7rem;
+      padding: 1.2rem;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .value {
+      font-size: 1.3rem;
+      will-change: transform;
+    }
+
+    button {
+      margin-top: 0.5rem;
+      padding: 0.3rem 0.8rem;
+      border: none;
+      background: #007aff;
+      color: white;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005bb5;
+    }
+
+    .section-title {
+      margin: 1rem 0 2rem;
+      font-weight: 1000;
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>BPM Calculator</h1>
+<h1></h1>
+  <input id="bpm" type="number" placeholder="Введите BPM" value="120" oninput="calculate()" onfocus="this.select()" />
+
+  <div class="section-title">PreDelay</div>
+  <div class="grid" id="predelay-grid"></div>
+
+  <div class="section-title">Decay</div>
+  <div class="grid" id="decay-grid"></div>
+
+  <script>
+    const predelayMultipliers = [
+      { label: "1/64", mult: 0.015625 },
+      { label: "1/32", mult: 0.03125 },
+      { label: "1/16", mult: 0.0625 },
+      { label: "1/8", mult: 0.125 },
+    ];
+
+    const decayBaseMultipliers = [
+      { label: "1/8", base: 1, factor: 0.5 },
+      { label: "1/4", base: 1, factor: 1 },
+      { label: "1/2", base: 1, factor: 2 },
+      { label: "1", base: 1, factor: 4 },
+      { label: "2", base: 1, factor: 8 },
+      { label: "4", base: 1, factor: 16 },
+    ];
+
+    function calculate() {
+      const bpm = parseFloat(document.getElementById("bpm").value);
+      const predelayGrid = document.getElementById("predelay-grid");
+      const decayGrid = document.getElementById("decay-grid");
+      predelayGrid.innerHTML = "";
+      decayGrid.innerHTML = "";
+
+      if (isNaN(bpm) || bpm <= 0) return;
+
+      const beatMs = 60000 / bpm;
+
+      for (const n of predelayMultipliers) {
+        const predelay = +(beatMs * n.mult).toFixed(2);
+        const card = createCard(n.label, predelay); 
+        predelayGrid.appendChild(card);
+      }
+
+      for (const n of decayBaseMultipliers) {
+        const decay = +(beatMs * n.base * n.factor).toFixed(2);
+        const card = createCard(n.label, decay, true);
+        decayGrid.appendChild(card);
+      }
+    }
+
+    function createCard(label, value, isSeconds = false) {
+  const div = document.createElement("div");
+  div.className = "card";
+
+  const labelEl = document.createElement("div");
+  labelEl.className = "label";
+  labelEl.textContent = label;
+
+  const valueEl = document.createElement("div");
+  valueEl.className = "value";
+  valueEl.textContent = isSeconds ? (value / 1000).toFixed(2) + " s" : value + " ms";
+
+  const btn = document.createElement("button");
+  btn.textContent = "Copy";
+  btn.onclick = () => {
+    navigator.clipboard.writeText(isSeconds ? (value / 1000).toFixed(2) : value);
+    btn.textContent = "Copied!";
+    setTimeout(() => btn.textContent = "Copy", 1000);
+  };
+
+  div.appendChild(labelEl);
+  div.appendChild(valueEl);
+  div.appendChild(btn);
+  return div;
+}
+
+    calculate();
+  </script>
+</body>
+</html>
